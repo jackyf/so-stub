@@ -11,6 +11,11 @@ sub mlog {
 	say $what . ' ...';
 }
 
+sub ilog {
+	my $what = shift;
+	say $what;
+}
+
 sub process_symbol_table {
 	my $path = shift;
 	my $all = shift;
@@ -61,17 +66,17 @@ process_symbol_table($lib_path, 0, sub {
 	}
 });
 my $used_symbol_count = scalar(@used_symbols);
-mlog("Used symbols: $used_symbol_count, unused symbols: $unused_symbol_count");
+ilog("Used symbols: $used_symbol_count, unused symbols: $unused_symbol_count");
 if ($used_symbol_count == 0) {
 	die("no dynamic symbols found in $lib_path");
 }
 
 my $output_file = basename($lib_file);
-mlog("Output file: $output_file");
+ilog("Output file: $output_file");
 (my $lib_id = $output_file) =~ s/[^0-9a-z]+//gi;
-mlog("Lib ID: $lib_id");
-my $function_name = "elfstub_for_$lib_id"; 
-mlog("Stub function name: $function_name");
+ilog("Lib ID: $lib_id");
+my $function_name = "excestub_for_$lib_id";
+ilog("Stub function name: $function_name");
 my $output_path = $output_file;
 
 mlog("Compiling");
@@ -84,5 +89,5 @@ mlog("Stripping");
 system("strip $output_path") == 0
 		or die("strip failed: $!");
 
-mlog("Done");
+ilog("Done");
 
