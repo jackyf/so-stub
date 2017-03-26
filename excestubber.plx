@@ -18,18 +18,18 @@ sub ilog {
 
 sub process_symbol_table {
 	my $path = shift;
-	my $all = shift;
+	my $mode = shift;
 	my $callback = shift;
 
 	mlog("Reading symbol table of $path");
 
-	my $nm_opt_args = ($all ? '' : '--defined-only --print-size');
+	my $nm_opt_args = ($mode eq 'caller' ? '--undefined-only' : '--defined-only --print-size');
 	my $symbol_table = `nm $path --dynamic $nm_opt_args`;
 
 	for my $line (split /\n/, $symbol_table) {
 		chomp($line);
 		my @parts = split / /, $line;
-		if ($all or (scalar(@parts) == 4)) {
+		if ($mode eq 'caller' or (scalar(@parts) == 4)) {
 			$callback->($parts[-1]);
 		}
 	}
@@ -50,14 +50,14 @@ my ($caller_path, $lib_file) = @ARGV;
 my $lib_path = process_ldd($caller_path, $lib_file);
 
 my %caller_symbol_set;
-process_symbol_table($caller_path, 1, sub {
+process_symbol_table($caller_path, 'caller', sub {
 	my $symbol = shift;
 	$caller_symbol_set{$symbol} = 1;
 });
 
 my @used_symbols;
 my $unused_symbol_count = 0;
-process_symbol_table($lib_path, 0, sub {
+process_symbol_table($lib_path, 'lib', sub {
 	my $symbol = shift;
 	if (defined $caller_symbol_set{$symbol}) {
 		push @used_symbols, $symbol;
