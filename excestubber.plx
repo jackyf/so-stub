@@ -40,7 +40,7 @@ sub process_ldd {
 
 	mlog("Processing dynamic dependencies of $caller_path");
 	my $caller_ldd_ouptut = `ldd $caller_path`;
-	($caller_ldd_ouptut =~ m/$lib_prefix[^ ]* => (.*?) /)
+	($caller_ldd_ouptut =~ m/$lib_prefix[^ ]* => (.*?) /i)
 			or die("could not find $lib_prefix in dynamic dependencies for $caller_path");
 	return $1;
 }
