@@ -3,6 +3,8 @@
 use strict;
 use warnings;
 
+use File::Basename;
+
 my $obj_file = $ARGV[0];
 my $symbol_table = `nm $obj_file --dynamic --defined-only --print-size`;
 
@@ -19,10 +21,12 @@ if (scalar(@dynamic_symbols) == 0) {
 	die("no dynamic symbols found");
 }
 
-my $output_path = 'stubs.so';
+my $output_file = basename($obj_file);
+my $output_path = $output_file;
 
 my $ld_args = join(' ', map { "-Wl,--defsym=$_=exception_thrower" } @dynamic_symbols);
-system("g++ -shared -Wall -fPIC stubs.cpp $ld_args -o $output_path") == 0
+my $defines = "-DLNAME=\\\"$output_file\\\"";
+system("g++ -shared -Wall -fPIC $defines stubs.cpp $ld_args -o $output_path") == 0
 		or die("compiling failed: $!");
 system("strip $output_path") == 0
 		or die("strip failed: $!");
