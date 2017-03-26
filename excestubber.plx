@@ -8,12 +8,17 @@ use File::Basename;
 
 sub mlog {
 	my $what = shift;
-	say $what . ' ...';
+	say 'P: ' . $what . ' ...';
 }
 
 sub ilog {
 	my $what = shift;
-	say $what;
+	say 'I: ' . $what;
+}
+
+sub elog {
+	my $what = shift;
+	die('E: ' . $what);
 }
 
 sub process_symbol_table {
@@ -41,13 +46,13 @@ sub process_ldd {
 	mlog("Processing dynamic dependencies of $caller_path");
 	my $caller_ldd_ouptut = `ldd $caller_path`;
 	($caller_ldd_ouptut =~ m/($lib_prefix[^ ]*) => (.*?) /i)
-			or die("could not find $lib_prefix in dynamic dependencies for $caller_path");
+			or elog("could not find $lib_prefix in dynamic dependencies for $caller_path");
 	my $lib_file = $1;
 	my $lib_path = $2;
 
 	my $objdump_output = `objdump -p $caller_path | grep -i needed`;
 	$objdump_output =~ m/\Q$lib_file\E/
-			or die("$lib_file is not a direct dependency of $caller_path, useless to stub");
+			or elog("$lib_file is not a direct dependency of $caller_path, useless to stub");
 
 	return $lib_path;
 }
@@ -75,7 +80,7 @@ process_symbol_table($lib_path, 'lib', sub {
 my $used_symbol_count = scalar(@used_symbols);
 ilog("Used symbols: $used_symbol_count, unused symbols: $unused_symbol_count");
 if ($used_symbol_count == 0) {
-	die("no dynamic symbols found in $lib_path");
+	elog("no dynamic symbols found in $lib_path");
 }
 
 my $output_file = basename($lib_path);
@@ -89,11 +94,11 @@ mlog("Compiling");
 my $defines = "-DLNAME=\\\"$output_file\\\" -DFNAME=$function_name";
 my $ld_args = join(' ', map { "-Wl,--defsym=$_=$function_name" } @used_symbols);
 system("g++ -shared -Wall -fPIC $defines stubs.cpp $ld_args -o $output_path") == 0
-		or die("compiling failed: $!");
+		or elog("compiling failed: $!");
 
 mlog("Stripping");
 system("strip $output_path") == 0
-		or die("strip failed: $!");
+		or elog("strip failed: $!");
 
 ilog("Done");
 
