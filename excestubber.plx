@@ -74,7 +74,6 @@ if ($used_symbol_count == 0) {
 my $output_file = basename($lib_file);
 ilog("Output file: $output_file");
 (my $lib_id = $output_file) =~ s/[^0-9a-z]+//gi;
-ilog("Lib ID: $lib_id");
 my $function_name = "excestub_for_$lib_id";
 ilog("Stub function name: $function_name");
 my $output_path = $output_file;
