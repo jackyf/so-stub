@@ -36,18 +36,18 @@ sub process_symbol_table {
 }
 
 sub process_ldd {
-	my ($caller_path, $lib_file) = @_;
+	my ($caller_path, $lib_prefix) = @_;
 
 	mlog("Processing dynamic dependencies of $caller_path");
 	my $caller_ldd_ouptut = `ldd $caller_path`;
-	($caller_ldd_ouptut =~ m/$lib_file => (.*?) /) 
-			or die("could not find $lib_file in dynamic dependencies for $caller_path");
+	($caller_ldd_ouptut =~ m/$lib_prefix[^ ]* => (.*?) /)
+			or die("could not find $lib_prefix in dynamic dependencies for $caller_path");
 	return $1;
 }
 
-my ($caller_path, $lib_file) = @ARGV;
+my ($caller_path, $lib_prefix) = @ARGV;
 
-my $lib_path = process_ldd($caller_path, $lib_file);
+my $lib_path = process_ldd($caller_path, $lib_prefix);
 
 my %caller_symbol_set;
 process_symbol_table($caller_path, 'caller', sub {
@@ -71,7 +71,7 @@ if ($used_symbol_count == 0) {
 	die("no dynamic symbols found in $lib_path");
 }
 
-my $output_file = basename($lib_file);
+my $output_file = basename($lib_path);
 ilog("Output file: $output_file");
 (my $lib_id = $output_file) =~ s/[^0-9a-z]+//gi;
 my $function_name = "excestub_for_$lib_id";
