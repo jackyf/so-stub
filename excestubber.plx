@@ -41,31 +41,33 @@ sub process_symbol_table {
 }
 
 sub process_ldd {
-	my ($caller_path, $lib_prefix) = @_;
+	my ($main_caller_path, $lib_prefix) = @_;
 
-	mlog("Processing dynamic dependencies of $caller_path");
-	my $caller_ldd_ouptut = `ldd $caller_path`;
+	mlog("Processing dynamic dependencies of $main_caller_path");
+	my $caller_ldd_ouptut = `ldd $main_caller_path`;
 	($caller_ldd_ouptut =~ m/($lib_prefix[^ ]*) => (.*?) /i)
-			or elog("could not find $lib_prefix in dynamic dependencies for $caller_path");
+			or elog("could not find $lib_prefix in dynamic dependencies for $main_caller_path");
 	my $lib_file = $1;
 	my $lib_path = $2;
 
-	my $objdump_output = `objdump -p $caller_path | grep -i needed`;
-	$objdump_output =~ m/\Q$lib_file\E/
-			or elog("$lib_file is not a direct dependency of $caller_path, useless to stub");
+	my @all_callers = ($caller_ldd_ouptut =~ m/=> (.*?) /g);
+	push @all_callers, $main_caller_path;
+	@all_callers = grep { $_ ne $lib_path } @all_callers;
 
-	return $lib_path;
+	return ($lib_path, \@all_callers);
 }
 
-my ($caller_path, $lib_prefix) = @ARGV;
+my ($main_caller_path, $lib_prefix) = @ARGV;
 
-my $lib_path = process_ldd($caller_path, $lib_prefix);
+my ($lib_path, $all_callers) = process_ldd($main_caller_path, $lib_prefix);
 
 my %caller_symbol_set;
-process_symbol_table($caller_path, 'caller', sub {
-	my $symbol = shift;
-	$caller_symbol_set{$symbol} = 1;
-});
+for my $caller_path (@$all_callers) {
+	process_symbol_table($caller_path, 'caller', sub {
+		my $symbol = shift;
+		$caller_symbol_set{$symbol} = 1;
+	});
+}
 
 my @used_symbols;
 my $unused_symbol_count = 0;
