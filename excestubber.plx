@@ -40,9 +40,16 @@ sub process_ldd {
 
 	mlog("Processing dynamic dependencies of $caller_path");
 	my $caller_ldd_ouptut = `ldd $caller_path`;
-	($caller_ldd_ouptut =~ m/$lib_prefix[^ ]* => (.*?) /i)
+	($caller_ldd_ouptut =~ m/($lib_prefix[^ ]*) => (.*?) /i)
 			or die("could not find $lib_prefix in dynamic dependencies for $caller_path");
-	return $1;
+	my $lib_file = $1;
+	my $lib_path = $2;
+
+	my $objdump_output = `objdump -p $caller_path | grep -i needed`;
+	$objdump_output =~ m/\Q$lib_file\E/
+			or die("$lib_file is not a direct dependency of $caller_path, useless to stub");
+
+	return $lib_path;
 }
 
 my ($caller_path, $lib_prefix) = @ARGV;
