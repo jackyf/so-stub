@@ -16,6 +16,11 @@ sub ilog {
 	say 'I: ' . $what;
 }
 
+sub wlog {
+	my $what = shift;
+	say 'W: ' . $what;
+}
+
 sub elog {
 	my $what = shift;
 	die('E: ' . $what);
@@ -82,7 +87,7 @@ process_symbol_table($lib_path, 'lib', sub {
 my $used_symbol_count = scalar(@used_symbols);
 ilog("Used symbols: $used_symbol_count, unused symbols: $unused_symbol_count");
 if ($used_symbol_count == 0) {
-	elog("no dynamic symbols found in $lib_path");
+	wlog("no used symbols found, stub library will be empty");
 }
 
 my $output_file = basename($lib_path);
