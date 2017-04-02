@@ -71,6 +71,9 @@ sub get_lib_id {
 }
 
 my ($main_caller_path, $lib_prefix, $lang) = @ARGV;
+if ($lang ne 'cpp' and $lang ne 'c') {
+	elog("invalid language '$lang'");
+}
 
 my ($lib_path, $all_callers) = process_ldd($main_caller_path, $lib_prefix);
 my $output_file = basename($lib_path);
@@ -105,6 +108,13 @@ ilog("Output file: $output_file");
 my $function_name = "so_stub_for_$lib_id";
 ilog("Stub function name: $function_name");
 my $output_path = $output_file;
+if ($lang eq 'cpp') {
+	ilog("Using C++ stubs - library function stubs will throw std::runtime_error");
+	ilog("  -> catch this exception in the code to make the library optional");
+} elsif ($lang eq 'c') {
+	ilog("Using C stubs - library function stubs will call abort()");
+	ilog("  -> check for environment variable '$function_name' before using the library");
+}
 
 mlog("Compiling");
 my $defsym_args_file = File::Temp->new();
