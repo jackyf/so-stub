@@ -9,3 +9,7 @@ Usage
 - _so_: shared library (.so) to stub; could a full library file name or a distinguishable prefix;
 - _lang_: either `c` or `cpp`.
 
+License
+-------
+
+MIT
