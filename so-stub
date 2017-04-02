@@ -5,6 +5,7 @@ use warnings;
 use feature qw(say);
 
 use File::Basename;
+use File::Temp;
 
 sub mlog {
 	my $what = shift;
@@ -106,9 +107,12 @@ ilog("Stub function name: $function_name");
 my $output_path = $output_file;
 
 mlog("Compiling");
+my $defsym_args_file = File::Temp->new();
+foreach my $sym (@used_symbols) {
+	say { $defsym_args_file } "-Wl,--defsym=$sym=$function_name";
+}
 my $defines = "-DLNAME=\\\"$output_file\\\" -DFNAME=$function_name";
-my $ld_args = join(' ', map { "-Wl,--defsym=$_=$function_name" } @used_symbols);
-system("g++ -shared -Wall -fPIC $defines stubs.$lang $ld_args -o $output_path") == 0
+system("g++ -shared -Wall -fPIC $defines stubs.$lang \@$defsym_args_file -o $output_path") == 0
 		or elog("compiling failed: $!");
 
 mlog("Stripping");
