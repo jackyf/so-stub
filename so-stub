@@ -100,7 +100,7 @@ if ($used_symbol_count == 0) {
 my $output_file = basename($lib_path);
 ilog("Output file: $output_file");
 my $lib_id = get_lib_id($output_file);
-my $function_name = "excestub_for_$lib_id";
+my $function_name = "stubso_for_$lib_id";
 ilog("Stub function name: $function_name");
 my $output_path = $output_file;
 
