@@ -62,7 +62,7 @@ sub process_ldd {
 	return ($lib_path, \@all_callers);
 }
 
-my ($main_caller_path, $lib_prefix) = @ARGV;
+my ($main_caller_path, $lib_prefix, $lang) = @ARGV;
 
 my ($lib_path, $all_callers) = process_ldd($main_caller_path, $lib_prefix);
 
@@ -100,7 +100,7 @@ my $output_path = $output_file;
 mlog("Compiling");
 my $defines = "-DLNAME=\\\"$output_file\\\" -DFNAME=$function_name";
 my $ld_args = join(' ', map { "-Wl,--defsym=$_=$function_name" } @used_symbols);
-system("g++ -shared -Wall -fPIC $defines stubs.cpp $ld_args -o $output_path") == 0
+system("g++ -shared -Wall -fPIC $defines stubs.$lang $ld_args -o $output_path") == 0
 		or elog("compiling failed: $!");
 
 mlog("Stripping");
