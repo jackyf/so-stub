@@ -101,7 +101,7 @@ if ($used_symbol_count == 0) {
 }
 
 ilog("Output file: $output_file");
-my $function_name = "stubso_for_$lib_id";
+my $function_name = "so_stub_for_$lib_id";
 ilog("Stub function name: $function_name");
 my $output_path = $output_file;
 
