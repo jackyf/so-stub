@@ -62,6 +62,13 @@ sub process_ldd {
 	return ($lib_path, \@all_callers);
 }
 
+sub get_lib_id {
+	my $result = shift;
+	$result =~ s/\.so.*//;
+	$result =~ s/[^0-9a-z]+//gi;
+	return $result;
+}
+
 my ($main_caller_path, $lib_prefix, $lang) = @ARGV;
 
 my ($lib_path, $all_callers) = process_ldd($main_caller_path, $lib_prefix);
@@ -92,7 +99,7 @@ if ($used_symbol_count == 0) {
 
 my $output_file = basename($lib_path);
 ilog("Output file: $output_file");
-(my $lib_id = $output_file) =~ s/[^0-9a-z]+//gi;
+my $lib_id = get_lib_id($output_file);
 my $function_name = "excestub_for_$lib_id";
 ilog("Stub function name: $function_name");
 my $output_path = $output_file;
